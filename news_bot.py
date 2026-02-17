@@ -250,6 +250,8 @@ class NewsFilter:
 
         for news in news_list:
             pub_date_str = news.get("pubDate", "")
+            title = NewsAI.remove_html_tags(news.get("title", ""))[:50]  # 제목 50자만
+
             try:
                 # RFC 822 형식: "Mon, 17 Feb 2026 14:30:00 +0900"
                 pub_date = datetime.strptime(pub_date_str, "%a, %d %b %Y %H:%M:%S %z")
@@ -258,10 +260,14 @@ class NewsFilter:
 
                 if pub_date >= cutoff_time:
                     filtered_news.append(news)
+                else:
+                    print(f"   ⏱️  오래된 기사 제외: {title}... ({pub_date_str})")
             except (ValueError, AttributeError) as e:
-                # 날짜 파싱 실패 시 일단 포함
-                print(f"날짜 파싱 실패: {pub_date_str}, 오류: {e}")
-                filtered_news.append(news)
+                # 날짜 파싱 실패 시 제외 (안전하게)
+                print(f"⚠️  날짜 파싱 실패로 제외: {pub_date_str}")
+                print(f"   오류 내용: {e}")
+                # 날짜를 확인할 수 없으면 제외하는 게 안전
+                continue
 
         return filtered_news
 

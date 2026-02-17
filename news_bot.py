@@ -15,7 +15,7 @@ import smtplib
 import re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Tuple
 import json
 
@@ -359,7 +359,9 @@ class EmailSender:
 
     def _create_email_body(self, news_list: List[Dict], keyword: str, keywords: List[Tuple[str, float]] = None) -> str:
         """이메일 본문 생성 (HTML 형식, AI 강화)"""
-        now = datetime.now().strftime("%Y년 %m월 %d일 %H시 %M분")
+        # 한국 시간(KST = UTC+9) 사용
+        KST = timezone(timedelta(hours=9))
+        now = datetime.now(KST).strftime("%Y년 %m월 %d일 %H시 %M분")
 
         # 키워드 HTML 생성
         keywords_html = ""

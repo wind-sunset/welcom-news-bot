@@ -68,11 +68,51 @@ class NaverNewsSearcher:
 class NewsAI:
     """AI 기반 뉴스 분석 클래스"""
 
+    # 카테고리별 키워드 정의
+    CATEGORY_KEYWORDS = {
+        "💰 금융": ["금융", "은행", "대출", "적금", "예금", "금리", "이자", "저축", "투자", "펀드", "주식", "채권"],
+        "🏢 기업": ["기업", "회사", "사업", "경영", "CEO", "임원", "지점", "영업", "매출", "실적"],
+        "💳 금융상품": ["상품", "카드", "보험", "연금", "ISA", "CMA", "청약", "통장"],
+        "📊 부동산": ["부동산", "아파트", "주택", "건물", "분양", "입주", "임대"],
+        "⚖️ 규제": ["금감원", "규제", "제재", "법원", "판결", "소송", "처벌", "과징금", "검찰", "경찰"],
+        "🔧 IT": ["IT", "디지털", "앱", "모바일", "시스템", "플랫폼", "AI", "빅데이터"],
+        "👥 인사": ["인사", "임명", "발령", "승진", "신임", "취임"],
+        "📈 실적": ["실적", "수익", "손실", "영업이익", "순이익", "매출", "분기"],
+    }
+
     @staticmethod
     def remove_html_tags(text: str) -> str:
         """HTML 태그 제거"""
         clean = re.compile('<.*?>')
         return re.sub(clean, '', text)
+
+    @staticmethod
+    def categorize_news(news: Dict) -> str:
+        """
+        뉴스 카테고리 자동 분류
+
+        Args:
+            news: 뉴스 딕셔너리
+
+        Returns:
+            카테고리 문자열
+        """
+        title = NewsAI.remove_html_tags(news.get("title", "")).lower()
+        description = NewsAI.remove_html_tags(news.get("description", "")).lower()
+        full_text = f"{title} {description}"
+
+        # 각 카테고리별 점수 계산
+        scores = {}
+        for category, keywords in NewsAI.CATEGORY_KEYWORDS.items():
+            score = sum(1 for keyword in keywords if keyword.lower() in full_text)
+            if score > 0:
+                scores[category] = score
+
+        # 가장 높은 점수의 카테고리 반환
+        if scores:
+            return max(scores.items(), key=lambda x: x[1])[0]
+        else:
+            return "📰 일반"
 
     @staticmethod
     def extract_keywords(news_list: List[Dict], top_n: int = 5) -> List[Tuple[str, float]]:
@@ -457,6 +497,17 @@ class EmailSender:
                     font-weight: 600;
                     margin-left: 8px;
                 }}
+                .category-badge {{
+                    display: inline-block;
+                    background: #e3f2fd;
+                    color: #1976d2;
+                    padding: 4px 10px;
+                    border-radius: 12px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    margin-left: 10px;
+                    border: 1px solid #bbdefb;
+                }}
             </style>
         </head>
         <body>
@@ -479,6 +530,9 @@ class EmailSender:
                 link = news.get("link", "#")
                 pub_date = news.get("pubDate", "날짜 미상")
 
+                # AI 카테고리 분류
+                category = NewsAI.categorize_news(news)
+
                 # AI 요약 생성
                 full_text = f"{title}. {description}"
                 summary = NewsAI.simple_summarize(full_text, max_sentences=2)
@@ -487,6 +541,7 @@ class EmailSender:
             <div class="news-item">
                 <div class="news-title">
                     <strong>{idx}.</strong> <a href="{link}" target="_blank">{title}</a>
+                    <span class="category-badge">{category}</span>
                 </div>
                 <div class="news-summary">
                     💡 <strong>AI 요약:</strong> {summary}

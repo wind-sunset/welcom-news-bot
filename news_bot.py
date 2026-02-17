@@ -245,7 +245,11 @@ class NewsFilter:
         Returns:
             필터링된 뉴스 리스트
         """
-        cutoff_time = datetime.now() - timedelta(hours=hours)
+        # 한국 시간대(KST) 기준으로 cutoff_time 계산
+        KST = timezone(timedelta(hours=9))
+        now_kst = datetime.now(KST)
+        cutoff_time = now_kst - timedelta(hours=hours)
+
         filtered_news = []
 
         for news in news_list:
@@ -255,8 +259,7 @@ class NewsFilter:
             try:
                 # RFC 822 형식: "Mon, 17 Feb 2026 14:30:00 +0900"
                 pub_date = datetime.strptime(pub_date_str, "%a, %d %b %Y %H:%M:%S %z")
-                # timezone-naive로 변환하여 비교
-                pub_date = pub_date.replace(tzinfo=None)
+                # 타임존 정보 유지한 채로 비교!
 
                 if pub_date >= cutoff_time:
                     filtered_news.append(news)

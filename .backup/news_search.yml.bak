@@ -2,12 +2,13 @@ name: 웰컴저축은행 뉴스 자동 검색
 
 on:
   schedule:
-    # 30분 간격, KST 06:00~20:00 (UTC 21:00~11:00)
-    # KST 06:00~08:30 = UTC 21:00~23:30 (전날)
-    - cron: '0,30 21-23 * * *'
-    # KST 09:00~19:30 = UTC 00:00~10:30
-    - cron: '0,30 0-10 * * *'
-    # KST 20:00 = UTC 11:00
+    - cron: '0 21 * * *'
+    - cron: '0 23 * * *'
+    - cron: '0 1 * * *'
+    - cron: '0 3 * * *'
+    - cron: '0 5 * * *'
+    - cron: '0 7 * * *'
+    - cron: '0 9 * * *'
     - cron: '0 11 * * *'
   workflow_dispatch:
 
@@ -35,8 +36,7 @@ jobs:
           NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          TO_EMAIL: ${{ secrets.TO_EMAIL }}
-          FILTER_HOURS: '1'
+          TO_EMAIL: "j900610@gmail.com,julie310803@gmail.com,jy0731@welcomebank.co.kr"
         run: |
           python news_bot.py
 

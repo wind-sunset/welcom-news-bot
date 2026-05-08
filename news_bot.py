@@ -610,9 +610,12 @@ def main():
         logger.warning("   키워드 추출 실패 (기사 없음)")
 
     # 5. 이메일 전송
-    logger.info("5️⃣  이메일 전송 중...")
-    sender = EmailSender(gmail_user, gmail_password)
-    sender.send_news_email(to_email, unique_news, keyword, keywords)
+    if not unique_news:
+        logger.info("새로운 기사가 없어 이메일 전송을 건너뜁니다.")
+    else:
+        logger.info("5️⃣  이메일 전송 중...")
+        sender = EmailSender(gmail_user, gmail_password)
+        sender.send_news_email(to_email, unique_news, keyword, keywords)
 
     logger.info("=" * 60)
     logger.info("작업 완료!")

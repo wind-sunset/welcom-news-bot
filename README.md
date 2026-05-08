@@ -1,15 +1,18 @@
 # 🤖 웰컴저축은행 뉴스 자동 검색 봇
 
-매일 **06:00 ~ 20:00** 사이에 **2시간 간격**으로 "웰컴저축은행" 키워드로 네이버 뉴스를 자동 검색하여 이메일로 전송합니다.
+매일 **06:00 ~ 20:00** (KST) 사이에 **30분 간격**으로 "웰컴저축은행" 키워드로 네이버 뉴스를 자동 검색하여 이메일로 전송합니다.
 
 ## ✨ 주요 기능
 
 - 📰 네이버 뉴스 검색 API를 활용한 최신 뉴스 수집
-- ⏰ 하루 8회 자동 실행 (06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00)
-- 🕐 최근 2시간 이내 발행된 기사만 필터링
-- 🚫 중복 기사 자동 제거
+- ⏰ 하루 29회 자동 실행 (06:00 ~ 20:00, 30분 간격)
+- 🕐 최근 1시간 이내 발행된 기사만 필터링 (`FILTER_HOURS` 환경 변수로 조정 가능)
+- 🤖 AI 기반 카테고리 자동 분류 및 요약
+- 🔑 TF-IDF 기반 주요 키워드 자동 추출
+- 🚫 코사인 유사도 기반 중복 기사 자동 제거
 - 📧 HTML 형식의 깔끔한 이메일 전송
 - 🔄 GitHub Actions를 통한 완전 자동화 (서버 불필요)
+- 🔁 API 장애 시 지수 백오프 자동 재시도 (최대 4회)
 
 ## 📋 사전 준비사항
 
@@ -37,69 +40,42 @@ Gmail에서 2단계 인증이 활성화되어 있어야 합니다.
 
 ## 🚀 설정 방법
 
-### 1. GitHub 저장소 생성
+### 1. GitHub Secrets 설정
 
-1. GitHub에 새 저장소를 생성합니다 (public 또는 private)
-2. 저장소 이름 예: `welcom-news-bot`
-
-### 2. 코드 업로드
-
-이 프로젝트의 모든 파일을 GitHub 저장소에 업로드합니다:
-
-```bash
-git init
-git add .
-git commit -m "Initial commit: 웰컴저축은행 뉴스봇"
-git branch -M main
-git remote add origin https://github.com/your-username/welcom-news-bot.git
-git push -u origin main
-```
-
-### 3. GitHub Secrets 설정
-
-GitHub 저장소에서 API 키와 비밀번호를 안전하게 저장합니다:
-
-1. GitHub 저장소 페이지에서 **Settings** 클릭
-2. 좌측 메뉴에서 **Secrets and variables** > **Actions** 클릭
-3. **New repository secret** 버튼을 클릭하여 다음 4개의 시크릿을 추가:
+GitHub 저장소의 **Settings → Secrets and variables → Actions**에서 아래 5개의 Secret을 추가합니다.
 
 | Name | Value | 설명 |
 |------|-------|------|
-| `NAVER_CLIENT_ID` | 네이버 Client ID | 네이버 개발자센터에서 발급받은 Client ID |
-| `NAVER_CLIENT_SECRET` | 네이버 Client Secret | 네이버 개발자센터에서 발급받은 Client Secret |
-| `GMAIL_USER` | Gmail 주소 | 발신자 Gmail 주소 (예: your-email@gmail.com) |
-| `GMAIL_APP_PASSWORD` | Gmail 앱 비밀번호 | Gmail에서 발급받은 16자리 앱 비밀번호 (공백 제거) |
+| `NAVER_CLIENT_ID` | 네이버 Client ID | 네이버 개발자센터에서 발급 |
+| `NAVER_CLIENT_SECRET` | 네이버 Client Secret | 네이버 개발자센터에서 발급 |
+| `GMAIL_USER` | Gmail 주소 | 발신자 Gmail 주소 |
+| `GMAIL_APP_PASSWORD` | Gmail 앱 비밀번호 | 16자리 앱 비밀번호 (공백 제거) |
+| `TO_EMAIL` | 수신자 이메일 | 쉼표로 구분하여 여러 명 입력 가능 (예: `a@gmail.com,b@gmail.com`) |
 
-### 4. GitHub Actions 활성화
+### 2. GitHub Actions 활성화
 
 1. GitHub 저장소의 **Actions** 탭 클릭
 2. **I understand my workflows, go ahead and enable them** 클릭
-3. 워크플로우가 활성화되면 자동으로 스케줄에 따라 실행됩니다
+3. 워크플로우가 활성화되면 스케줄에 따라 자동 실행됩니다
 
 ## 🧪 테스트 실행
-
-설정이 완료되면 즉시 테스트해볼 수 있습니다:
 
 1. GitHub 저장소의 **Actions** 탭으로 이동
 2. 좌측에서 **웰컴저축은행 뉴스 자동 검색** 워크플로우 클릭
 3. 우측 상단의 **Run workflow** 버튼 클릭
-4. **Run workflow** 확인 버튼 클릭
-5. 워크플로우가 실행되고 몇 분 후 이메일이 도착합니다
+4. 몇 분 후 이메일이 도착합니다
 
 ## 📊 실행 스케줄
 
-| 한국 시간 (KST) | UTC 시간 | 비고 |
-|----------------|----------|------|
-| 06:00 | 21:00 (전날) | 아침 첫 뉴스 |
-| 08:00 | 23:00 (전날) | |
-| 10:00 | 01:00 | |
-| 12:00 | 03:00 | 점심 시간 |
-| 14:00 | 05:00 | |
-| 16:00 | 07:00 | |
-| 18:00 | 09:00 | 퇴근 시간 |
-| 20:00 | 11:00 | 저녁 마지막 뉴스 |
+30분 간격, KST 06:00 ~ 20:00 (하루 29회)
 
-> GitHub Actions는 UTC 시간 기준으로 동작하므로 스케줄이 UTC로 설정되어 있습니다.
+| 구간 (KST) | cron (UTC) |
+|------------|------------|
+| 06:00 ~ 08:30 | `0,30 21-23 * * *` |
+| 09:00 ~ 19:30 | `0,30 0-10 * * *` |
+| 20:00 | `0 11 * * *` |
+
+> GitHub Actions는 UTC 기준으로 동작합니다.
 
 ## 📁 프로젝트 구조
 
@@ -108,6 +84,7 @@ welcom-news-bot/
 ├── .github/
 │   └── workflows/
 │       └── news_search.yml    # GitHub Actions 워크플로우
+├── .backup/                   # 원본 파일 백업
 ├── news_bot.py                # 메인 Python 스크립트
 ├── requirements.txt           # Python 의존성 패키지
 └── README.md                  # 이 파일
@@ -117,97 +94,58 @@ welcom-news-bot/
 
 ### 검색 키워드 변경
 
-`news_bot.py` 파일의 `keyword` 변수를 수정하세요:
+`news_bot.py`의 `keyword` 변수를 수정하세요:
 
 ```python
-# 기본값
-keyword = "웰컴저축은행"
-
-# 변경 예시
-keyword = "삼성전자"
+keyword = "웰컴저축은행"  # 원하는 키워드로 변경
 ```
 
-### 시간 간격 변경
+### 필터 시간 범위 변경
 
-`news_bot.py`의 `filter_recent_news` 함수에서 `hours` 파라미터를 조정:
-
-```python
-# 기본값 (2시간)
-recent_news = NewsFilter.filter_recent_news(all_news, hours=2)
-
-# 변경 예시 (1시간)
-recent_news = NewsFilter.filter_recent_news(all_news, hours=1)
-```
-
-### 실행 시간 변경
-
-`.github/workflows/news_search.yml` 파일의 `cron` 스케줄을 수정:
-
-```yaml
-schedule:
-  # 예: 매일 오전 9시 (KST) = UTC 00:00
-  - cron: '0 0 * * *'
-```
-
-### 이메일 수신자 변경
-
-`news_bot.py` 파일 또는 GitHub Actions 워크플로우의 `TO_EMAIL` 환경 변수를 수정:
-
-```python
-# news_bot.py에서 직접 변경
-to_email = os.getenv("TO_EMAIL", "new-email@example.com")
-```
-
-또는 GitHub Actions 워크플로우에서:
+워크플로우 파일의 `FILTER_HOURS` 값을 조정합니다 (기본값: `1`시간):
 
 ```yaml
 env:
-  TO_EMAIL: "new-email@example.com"
+  FILTER_HOURS: '1'   # 최근 1시간 이내 기사만 수집
+```
+
+### 수신자 변경
+
+GitHub Secrets의 `TO_EMAIL` 값을 수정합니다. 쉼표로 구분하면 여러 명에게 동시 발송됩니다:
+
+```
+a@gmail.com,b@company.com
 ```
 
 ## 🔍 문제 해결
 
 ### 이메일이 오지 않는 경우
 
-1. **GitHub Actions 실행 로그 확인**
-   - Actions 탭에서 워크플로우 실행 로그를 확인
-   - 빨간색 X 표시가 있다면 에러 메시지 확인
-
-2. **Secrets 확인**
-   - Settings > Secrets에서 모든 값이 제대로 입력되었는지 확인
-   - Gmail 앱 비밀번호에 공백이 없는지 확인
-
-3. **스팸 메일함 확인**
-   - Gmail의 스팸 메일함을 확인
-   - 스팸이 아님으로 표시하여 향후 받은편지함으로 수신
+1. **Actions 실행 로그 확인** — Actions 탭에서 빨간 X가 있으면 에러 메시지 확인
+2. **Secrets 확인** — 5개 Secret이 모두 올바르게 입력되었는지 확인
+3. **스팸 메일함 확인** — Gmail 스팸함을 확인하고 스팸 아님으로 표시
 
 ### API 호출 제한
 
-네이버 검색 API는 일일 25,000건, 초당 10건의 호출 제한이 있습니다. 이 봇은 하루 8회만 호출하므로 제한에 걸릴 걱정은 없습니다.
+네이버 검색 API는 일일 25,000건 제한입니다. 이 봇은 하루 29회 호출하므로 제한에 걸리지 않습니다.
 
-### GitHub Actions 실행이 안 되는 경우
+### GitHub Actions 실행 제한
 
-1. **Public 저장소**: 무료로 무제한 사용 가능
-2. **Private 저장소**: 무료 계정은 월 2,000분 제한 (이 봇은 하루에 약 5분 사용)
+- **Public 저장소**: 무료 무제한
+- **Private 저장소**: 무료 계정 월 2,000분 제한 (이 봇은 하루 약 15분 사용)
 
 ## 📧 이메일 형식
 
-이메일은 다음과 같은 정보를 포함합니다:
+각 이메일에는 다음 정보가 포함됩니다:
 
-- 📰 검색 키워드와 검색 시간
-- 📊 새로운 기사 개수
-- 각 기사별:
-  - 제목 (클릭 가능한 링크)
-  - 요약 내용
-  - 발행 시간
+- 검색 시각 및 필터 시간 범위
+- 수집된 기사 건수
+- 🔑 AI 추출 주요 키워드
+- 각 기사별: 제목(링크), AI 카테고리, AI 요약, 원문 설명, 발행 시간
 
 ## 📝 라이선스
 
 이 프로젝트는 자유롭게 사용 가능합니다.
-
-## 🙋‍♂️ 문의
-
-문제가 발생하거나 개선 아이디어가 있다면 GitHub Issues를 통해 문의해주세요.
 
 ---
 
